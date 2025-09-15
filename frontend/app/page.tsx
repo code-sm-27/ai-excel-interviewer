@@ -1,12 +1,16 @@
-// frontend/app/page.tsx (FINAL VERSION)
+// frontend/app/page.tsx (FINAL VERSION - OPTIMIZED)
 'use client';
 import { useState, FormEvent, useRef, useEffect } from 'react';
-import { Bot, User } from 'lucide-react'; // <-- NEW: Import icons
+import dynamic from 'next/dynamic'; // <-- NEW: Import dynamic
 
 interface Message {
   role: 'user' | 'ai';
   content: string;
 }
+
+// <-- NEW: Dynamically import icons
+const Bot = dynamic(() => import('lucide-react').then(mod => mod.Bot), { ssr: false });
+const User = dynamic(() => import('lucide-react').then(mod => mod.User), { ssr: false });
 
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -41,7 +45,7 @@ export default function Home() {
     setIsLoading(true);
 
     try {
-      // IMPORTANT: Use your deployed backend URL here for the final submission
+      // Corrected API call using a template literal
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/interview`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -50,11 +54,6 @@ export default function Home() {
           question_index: questionIndex,
         }),
       });
-
-      // Handle non-JSON responses gracefully
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
 
       const data = await response.json();
       setMessages([...newMessages, { role: 'ai', content: data.response }]);
