@@ -1,4 +1,3 @@
-# main.py --- FINAL VERSION FOR GOOGLE GEMINI
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -12,7 +11,6 @@ from langchain.schema import HumanMessage, AIMessage
 load_dotenv()
 
 # Initialize the Google Gemini model
-# NEW LINE
 llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0.5)
 
 app = FastAPI()
@@ -26,7 +24,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# [cite_start]This is your question bank with evaluation rubrics [cite: 1]
+# NEW CODE: Root endpoint for health check
+@app.get("/")
+async def read_root():
+    return {"message": "AI Excel Interviewer Backend is running!"}
+
 INTERVIEW_QUESTIONS = [
     {
         "question": "Hello! I am your AI-powered interviewer for the Excel proficiency assessment. To start, can you please explain the difference between the SUM and SUMIF functions in Excel?",
@@ -46,7 +48,7 @@ INTERVIEW_QUESTIONS = [
     }
 ]
 
-# [cite_start]The main system prompt that defines the AI agent's behavior [cite: 1]
+# The main system prompt that defines the AI agent's behavior
 SYSTEM_PROMPT = """
 You are an AI-powered mock interviewer for Microsoft Excel skills.
 Your persona is professional, friendly, and encouraging.
@@ -66,7 +68,6 @@ class InterviewRequest(BaseModel):
     history: list
     question_index: int
 
-# Replace your existing @app.post("/interview") function with this
 @app.post("/interview")
 async def run_interview_turn(request: InterviewRequest):
     current_question_index = request.question_index
@@ -92,7 +93,6 @@ async def run_interview_turn(request: InterviewRequest):
     response = await chain.ainvoke({})
 
     move_on_keywords = ["next question", "let's move on", "great", "thank you", "understood", "pivot table"]
-    # THIS IS THE FIXED LINE
     if any(kw in response.content.lower() for kw in move_on_keywords):
         final_next_index = current_question_index + 1
     else:
