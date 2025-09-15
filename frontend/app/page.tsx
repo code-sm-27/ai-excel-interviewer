@@ -26,7 +26,8 @@ export default function Home() {
   }, [messages, isLoading]);
 
   useEffect(() => {
-    const firstQuestion = "Hello! I am your AI-powered interviewer. To start, can you please explain the difference between the SUM and SUMIF functions in Excel?";
+    // Initial message from the AI to start the interview
+    const firstQuestion = "Hello! I am your AI-powered interviewer for the Excel proficiency assessment. To start, can you please explain the difference between the SUM and SUMIF functions in Excel?";
     setMessages([{ role: 'ai', content: firstQuestion }]);
   }, []);
 
@@ -41,7 +42,7 @@ export default function Home() {
 
     try {
       // IMPORTANT: Use your deployed backend URL here for the final submission
-      const response = await fetch('http://127.0.0.1:8000/interview', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/interview`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -49,6 +50,12 @@ export default function Home() {
           question_index: questionIndex,
         }),
       });
+
+      // Handle non-JSON responses gracefully
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const data = await response.json();
       setMessages([...newMessages, { role: 'ai', content: data.response }]);
       setQuestionIndex(data.next_question_index);
@@ -57,7 +64,7 @@ export default function Home() {
       }
     } catch (error) {
       console.error('Error contacting backend:', error);
-      setMessages([...newMessages, { role: 'ai', content: 'Sorry, I am having trouble connecting. Please try again.' }]);
+      setMessages([...newMessages, { role: 'ai', content: 'Sorry, I am having trouble connecting. Please ensure the backend is running and the correct URL is configured. Also, check the console for more details.' }]);
     } finally {
       setIsLoading(false);
     }
